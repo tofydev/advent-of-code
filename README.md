@@ -2,6 +2,6 @@
 
 adventofcode.com
 
-# 2024
+# 2024 - Elixir
 
 Days completed: 0
