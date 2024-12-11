@@ -18,7 +18,7 @@ const Challenge = {
   },
   officialPart2: {
     filename: 'official.txt',
-    nBlinks: 1500,
+    nBlinks: 75,
   },
   example: {
     filename: 'example.txt',
