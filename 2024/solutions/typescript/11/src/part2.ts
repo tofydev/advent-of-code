@@ -18,7 +18,7 @@ const Challenge = {
   },
   officialPart2: {
     filename: 'official.txt',
-    nBlinks: 75,
+    nBlinks: 150,
   },
   example: {
     filename: 'example.txt',
@@ -46,6 +46,10 @@ function countStones(stash: Stash): number {
   return Object.values(stash).reduce((sum, count) => sum + count)
 }
 
+function identify(stash: Stash): string {
+  return JSON.stringify(stash)
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LOGIC
 
@@ -59,23 +63,47 @@ function parseInput(input: string): Stash {
     }, {})
 }
 
-async function solve({ filename, nBlinks }: ChallengeConditions, log: boolean) {
+async function solve(
+  { filename, nBlinks }: ChallengeConditions,
+  log: boolean
+): Promise<number> {
   const initialStash = parseInput(await readFile({ day: 11, filename }))
-  const stash = handleStash(initialStash, nBlinks)
+  const stash = await handleStash(initialStash, nBlinks, 0)
   return countStones(stash)
 }
 
-function handleStash(initialStash: Stash, nBlinks: number): Stash {
-  if (nBlinks === 0) {
+// const cache: Record<string, Record<number, Stash>> = {}
+const cache: {
+  [value: string]:
+    | {
+        [nBlinksRemaining: number]: Promise<Stash> | undefined
+      }
+    | undefined
+} = {}
+async function handleStash(
+  initialStash: Stash,
+  blinksRemaining: number,
+  blinksDone: number
+): Promise<Stash> {
+  if (blinksRemaining === 0) {
     return initialStash
   } else {
-    const stash: Stash = {}
-    for (const [initialValue, count] of Object.entries(initialStash)) {
-      for (const value of handleStone(initialValue)) {
-        stash[value] = (stash[value] ?? 0) + count
+    const id = identify(initialStash)
+    const idCache = (cache[id] ||= {})
+    const cachedValuePromise = await idCache[blinksRemaining]
+    if (cachedValuePromise) {
+      return cachedValuePromise
+    } else {
+      const stash: Stash = {}
+      for (const [initialValue, count] of Object.entries(initialStash)) {
+        for (const value of handleStone(initialValue)) {
+          stash[value] = (stash[value] ?? 0) + count
+        }
       }
+      return await (idCache[blinksRemaining] = new Promise((resolve) =>
+        resolve(handleStash(stash, blinksRemaining - 1, blinksDone + 1))
+      ))
     }
-    return handleStash(stash, nBlinks - 1)
   }
 }
 
