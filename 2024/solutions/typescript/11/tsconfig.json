@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "rootDir": ".",
+    "target": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "module": "ESNext"
+  }
+}
